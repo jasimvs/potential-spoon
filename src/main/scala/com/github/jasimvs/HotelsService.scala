@@ -7,21 +7,25 @@ import com.typesafe.config.{Config, ConfigFactory}
  */
 object HotelsService {
 
-  def getHotelById(hotelId: Int): Option[Hotel] = {
-    Domain.hotels.find(_.hotelId == hotelId)
+  def getHotels() = {
+    Domain.hotels
   }
 
   def getHotelsByCity(city: String): Seq[Hotel] = {
     Domain.hotels.filter(_.city == city)
   }
 
-  def getHotelsByRoom(room: String): Seq[Hotel] = {
-    Domain.hotels.filter(_.room == room)
-  }
-
-  def getHotelsByPrice(min: Int, max: Int): Seq[Hotel] = {
-    Domain.hotels.filter(hotel => hotel.price >= min && hotel.price <= max)
-  }
+//  def getHotelById(hotelId: Int): Option[Hotel] = {
+//    Domain.hotels.find(_.hotelId == hotelId)
+//  }
+//
+//  def getHotelsByRoom(room: String): Seq[Hotel] = {
+//    Domain.hotels.filter(_.room == room)
+//  }
+//
+//  def getHotelsByPrice(min: Int, max: Int): Seq[Hotel] = {
+//    Domain.hotels.filter(hotel => hotel.price >= min && hotel.price <= max)
+//  }
 
   def sortHotelsByPrice(hotels: Seq[Hotel], sortOrder: Option[String]): Seq[Hotel] = {
     sortOrder match {
@@ -31,9 +35,9 @@ object HotelsService {
     }
   }
 
-  def sortByPriceAsc = (h1: Hotel, h2: Hotel) => h1.price < h2.price
+  private def sortByPriceAsc = (h1: Hotel, h2: Hotel) => h1.price < h2.price
 
-  def sortByPriceDesc = (h1: Hotel, h2: Hotel) => h1.price > h2.price
+  private def sortByPriceDesc = (h1: Hotel, h2: Hotel) => h1.price > h2.price
 
 }
 

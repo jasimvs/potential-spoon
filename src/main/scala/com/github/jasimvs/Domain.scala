@@ -5,7 +5,7 @@ import java.util.concurrent.{TimeUnit, Semaphore}
 import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Promise, Future}
+import scala.concurrent.{ExecutionContext, Await, Promise, Future}
 import scala.util.Try
 
 /**
@@ -17,7 +17,7 @@ case class Hotel(city: String, hotelId: Int, room: String, price: Int) {
 }
 
 case class RateLimiter(apiKey: String, maxRequests: Int, perTime: Int, suspensionTime: Int) {
-  private val locker = new Object()
+  private val locker = this
 
   var availableTokens = maxRequests
   var suspended = false
@@ -37,11 +37,13 @@ case class RateLimiter(apiKey: String, maxRequests: Int, perTime: Int, suspensio
     }
   }
 
-  def suspend() = Future(Await.ready(Promise().future, Duration.apply(suspensionTime, TimeUnit.MINUTES))) onComplete (u =>
-    Try(locker.synchronized {
-      suspended = false
-      availableTokens = availableTokens + 1
-    }))
+  def suspend()(implicit ec: ExecutionContext = ExecutionContext.global) =
+    Future(Await.ready(Promise().future, Duration.apply(suspensionTime, TimeUnit.MINUTES)))
+    .onComplete (u =>
+      Try(locker.synchronized {
+        suspended = false
+      }))
+  availableTokens = availableTokens + 1
 }
 
 
@@ -50,8 +52,6 @@ object Domain {
   val hotels: Seq[Hotel] = loadHotels
 
   val CsvFirstRow = "CITY,HOTELID,ROOM,PRICE"
-
-  
 
   def loadHotels: Seq[Hotel] = {
     //TODO load CSV
