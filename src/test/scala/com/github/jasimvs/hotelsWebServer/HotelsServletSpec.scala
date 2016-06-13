@@ -1,4 +1,4 @@
-package com.github.jasimvs
+package com.github.jasimvs.hotelsWebServer
 
 import org.scalatra.test.specs2._
 

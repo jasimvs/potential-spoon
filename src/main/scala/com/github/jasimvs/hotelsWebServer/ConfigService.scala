@@ -1,4 +1,4 @@
-package com.github.jasimvs
+package com.github.jasimvs.hotelsWebServer
 
 import com.typesafe.config.{Config, ConfigFactory}
 
@@ -9,12 +9,9 @@ import scala.util.Try
  */
 class ConfigService(conf: Config, requestLimits: Config) {
 
-  val RootConfigString = "hotelsservice.app"
-  val DefaultRequestLimitString = "defaultrequestlimit"
-  val TimeLimitString = "limittime"
-  val RequestLimitsString = "apikeyrequestlimits"
-  val SuspensionTimeString = "suspensiontime"
-
+  private val DefaultRequestLimitString = "defaultrequestlimit"
+  private val TimeLimitString = "limittime"
+  private val SuspensionTimeString = "suspensiontime"
 
   val DefaultRequestLimit = {
     if (isConfigMissing(conf, DefaultRequestLimitString)) 100
@@ -28,7 +25,7 @@ class ConfigService(conf: Config, requestLimits: Config) {
 
   val getSuspensionTime: Int = {
     if (isConfigMissing(conf, SuspensionTimeString)) 5
-    else requestLimits.getInt(SuspensionTimeString)
+    else conf.getInt(SuspensionTimeString)
   }
 
   def getRequestLimit(apiKey: String): Int = {
@@ -39,16 +36,11 @@ class ConfigService(conf: Config, requestLimits: Config) {
   private def isConfigMissing(conf: Config, configName: String) = {
     Try(conf.getIsNull(configName)).isFailure
   }
-
 }
 
 object ConfigService {
-  val RootConfigString = "hotelsservice.app"
-  val DefaultRequestLimitString = "defaultrequestlimit"
-  val TimeLimitString = "limittime"
-  val RequestLimitsString = "apikeyrequestlimits"
-  val SuspensionTimeString = "suspensionTime"
-
+  private val RootConfigString = "hotelsservice.app"
+  private val RequestLimitsString = "apikeyrequestlimits"
 
   def apply() = {
     val conf: Config = ConfigFactory.load.getConfig(RootConfigString)
