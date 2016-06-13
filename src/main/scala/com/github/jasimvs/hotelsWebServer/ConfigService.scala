@@ -7,25 +7,31 @@ import scala.util.Try
 /**
  * Created by jsulaiman on 6/13/2016.
  */
-class ConfigService(conf: Config, requestLimits: Config) {
+class ConfigService(rootConf: Config, requestLimits: Config) {
 
   private val DefaultRequestLimitString = "defaultrequestlimit"
   private val TimeLimitString = "limittime"
   private val SuspensionTimeString = "suspensiontime"
+  private val CsvDataFileString = "csvdatafile"
 
   val DefaultRequestLimit = {
-    if (isConfigMissing(conf, DefaultRequestLimitString)) 100
-    else conf.getInt(DefaultRequestLimitString)
+    if (isConfigMissing(rootConf, DefaultRequestLimitString)) 100
+    else rootConf.getInt(DefaultRequestLimitString)
   }
 
   val getTimeLimit = {
-    if (isConfigMissing(conf, TimeLimitString)) 10
-    else conf.getInt(TimeLimitString)
+    if (isConfigMissing(rootConf, TimeLimitString)) 10
+    else rootConf.getInt(TimeLimitString)
   }
 
   val getSuspensionTime: Int = {
-    if (isConfigMissing(conf, SuspensionTimeString)) 5
-    else conf.getInt(SuspensionTimeString)
+    if (isConfigMissing(rootConf, SuspensionTimeString)) 5
+    else rootConf.getInt(SuspensionTimeString)
+  }
+
+  val getCsvDataLoaderFile: String = {
+    if (isConfigMissing(rootConf, CsvDataFileString)) "/hoteldb.csv"
+    else rootConf.getString(CsvDataFileString)
   }
 
   def getRequestLimit(apiKey: String): Int = {

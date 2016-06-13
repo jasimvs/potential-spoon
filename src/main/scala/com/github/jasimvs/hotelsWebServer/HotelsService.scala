@@ -8,16 +8,22 @@ import org.slf4j.LoggerFactory
  */
 object HotelsService {
 
-  val logger =  LoggerFactory.getLogger(getClass)
+  private val logger =  LoggerFactory.getLogger(getClass)
+
+  private lazy val configService = ConfigService()
+  private val rateLimiterService: RateLimiterService = new RateLimiterService(configService)
+  private val hotelsDomain: Domain =  Domain(CsvDatatLoader.loadHotels(configService.getCsvDataLoaderFile).right.getOrElse(Seq[Hotel]()))
+
+  def requestApproved(apikey: String) = rateLimiterService.requestApproved(apikey)
 
   def getHotels() = {
     logger.debug("Get all hotels")
-    Domain.hotels
+    hotelsDomain.hotels
   }
 
   def getHotelsByCity(city: String): Seq[Hotel] = {
     logger.debug(s"Get hotels by city $city")
-    Domain.hotels.filter(_.city == city)
+    hotelsDomain.hotels.filter(_.city == city)
   }
 
 //  def getHotelById(hotelId: Int): Option[Hotel] = {
@@ -41,7 +47,7 @@ object HotelsService {
     }
   }
 
-  def getHeaderRow = Domain.CsvHeaderRow
+  def getHeaderRow = hotelsDomain.CsvHeaderRow
 
   private def sortByPriceAsc = (h1: Hotel, h2: Hotel) => h1.price < h2.price
 

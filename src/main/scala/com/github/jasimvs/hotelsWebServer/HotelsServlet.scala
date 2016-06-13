@@ -10,7 +10,7 @@ class HotelsServlet extends HotelsServiceStack {
   get("/hotels") {
     val apiKey = params.get("apiKey")
     logger.debug(s"Received request $request with apikey $apiKey")
-    if (apiKey.fold(false)(RateLimiterService.requestApproved(_))) {
+    if (apiKey.fold(false)(HotelsService.requestApproved(_))) {
       val sortBy = params.get("sortBy")
       val city = params.get("city")
       logger.debug(s"Query params city: $city and sortBy: $sortBy")

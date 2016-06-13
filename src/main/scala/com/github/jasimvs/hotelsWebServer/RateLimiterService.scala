@@ -11,13 +11,13 @@ import scala.util.Try
 /**
  * Created by jsulaiman on 6/13/2016.
  */
-object RateLimiterService {
+class RateLimiterService(configService: ConfigService) {
 
   private val logger =  LoggerFactory.getLogger(getClass)
 
   private val rateLimiters: scala.collection.mutable.Map[String, RateLimiter] = scala.collection.mutable.Map[String, RateLimiter]()
 
-  private lazy val configService = ConfigService()
+//  private lazy val configService = ConfigService()
 
   def requestApproved(apikey: String) = {
     logger.info("requestApproved")
