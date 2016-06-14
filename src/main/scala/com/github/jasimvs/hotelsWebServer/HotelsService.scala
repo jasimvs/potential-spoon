@@ -12,18 +12,24 @@ object HotelsService {
 
   private lazy val configService = ConfigService()
   private lazy val rateLimiterService: RateLimiterService = new RateLimiterService(configService)
-  private lazy val hotelsDomain: Domain = Domain(CsvDatatLoader.loadHotels(configService.getCsvDataLoaderFile).right.getOrElse(Seq[Hotel]()))
+  private lazy val hotelsDomain: Domain = Domain(CsvDatatLoader.loadHotels(configService.getCsvDataLoaderFile))
 
   def requestApproved(apikey: String): Boolean = rateLimiterService.requestApproved(apikey)
 
-  def getHotels(sortBy: Option[String] = None): Seq[Hotel] = {
+  def getHotels(sortBy: Option[String] = None): Either[Exception, Seq[Hotel]] = {
     logger.debug("Get all hotels")
-    sortHotelsByPrice(hotelsDomain.hotels, sortBy)
+    if (hotelsDomain.hotels.isRight)
+      Right(sortHotelsByPrice(hotelsDomain.hotels.right.get, sortBy))
+    else
+      hotelsDomain.hotels
   }
 
-  def getHotelsByCity(city: String, sortBy: Option[String] = None): Seq[Hotel] = {
+  def getHotelsByCity(city: String, sortBy: Option[String] = None): Either[Exception, Seq[Hotel]] = {
     logger.debug(s"Get hotels by city $city")
-    sortHotelsByPrice(hotelsDomain.hotels.filter(_.city == city), sortBy)
+    if (hotelsDomain.hotels.isRight)
+      Right(sortHotelsByPrice(hotelsDomain.hotels.right.get.filter(_.city == city), sortBy))
+    else
+      hotelsDomain.hotels
   }
 
   //  def getHotelById(hotelId: Int): Option[Hotel] = {

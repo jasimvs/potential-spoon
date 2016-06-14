@@ -1,12 +1,6 @@
 package com.github.jasimvs.hotelsWebServer
 
-import java.util.concurrent.TimeUnit
-
 import org.slf4j.LoggerFactory
-
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Promise, Await, Future, ExecutionContext}
-import scala.util.Try
 
 /**
  * Created by jsulaiman on 6/13/2016.

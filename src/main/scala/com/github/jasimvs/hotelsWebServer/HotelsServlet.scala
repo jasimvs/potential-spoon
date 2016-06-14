@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory
 
 class HotelsServlet extends HotelsServiceStack {
 
-  private val logger =  LoggerFactory.getLogger(getClass)
+  private val logger = LoggerFactory.getLogger(getClass)
 
   get("/hotels") {
     val apiKey = params.get("apiKey")
@@ -13,26 +13,27 @@ class HotelsServlet extends HotelsServiceStack {
     val city = params.get("city")
 
     logger.debug(s"Received request $request with apikey $apiKey, city: $city and sortBy: $sortBy")
-    if (apiKey.fold(false)(HotelsService.requestApproved(_))) {
-      contentType = "text/csv"
-      serveHotels(city.fold(HotelsService.getHotels(sortBy))(HotelsService.getHotelsByCity(_, sortBy)))
-    } else {
-      logger.debug("Rejecting request. Did not get approval from rate limiter.")
-      halt(ActionResult(ResponseStatus(429, "Too Many Requests"), tooManyRequestsError , Map()))
+    apiKey match {
+      case Some(key1) =>
+        if (HotelsService.requestApproved(key1)) {
+          val exceptionOrHotels = city.fold(HotelsService.getHotels(sortBy))(HotelsService.getHotelsByCity(_, sortBy))
+          if (exceptionOrHotels.isRight) {
+            contentType = "text/csv"
+            serveHotels(exceptionOrHotels.right.get)
+          } else {
+            logger.debug("Cannot serve request as unable to load hotels.")
+            halt(ActionResult(ResponseStatus(500, "Internal Server Error"), internalServerError, Map()))
+          }
+        } else {
+          logger.debug("Rejecting request. Did not get approval from rate limiter.")
+          halt(ActionResult(ResponseStatus(429, "Too Many Requests"), tooManyRequestsError, Map()))
+        }
+      case None =>
+        logger.debug("Unauthorized request.")
+        halt(ActionResult(ResponseStatus(403, "Forbidden"), forbiddenRequestError, Map()))
     }
   }
 
   private def serveHotels(hotels: Seq[Hotel]): StringBuilder =
     hotels.foldLeft(new StringBuilder(HotelsService.getHeaderRow))((out, hotel) => out.append(hotel.toString))
-
-  private val tooManyRequestsError = <html>
-    <head>
-      <title>Too Many Requests</title>
-    </head>
-    <body>
-      <h1>Too Many Requests</h1>
-      <p>Please wait for a while before sending any more requests.</p>
-    </body>
-  </html>
-
 }
