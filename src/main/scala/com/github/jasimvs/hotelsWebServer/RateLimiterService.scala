@@ -42,23 +42,43 @@ case class RateLimiter(apiKey: String, maxRequests: Int, perTime: Int, suspensio
   private val locker = this
   private var availableTokens = maxRequests
   private var suspended = false
+  private var lastRequestServedTime = System.currentTimeMillis()
+
 
   def  getToken(): Boolean = {
     logger.debug(s"get token from $availableTokens")
+    val currentTime = System.currentTimeMillis()
+    val timeSinceLastRequest = ((currentTime - lastRequestServedTime) / 1000).toInt
+
+    val maxRequestRate = maxRequests / perTime
+    val currentRequestRate = timeSinceLastRequest * maxRequestRate
     locker.synchronized {
-      if (availableTokens > 0) {
-        availableTokens = availableTokens - 1
+      availableTokens = availableTokens + currentRequestRate
+      if (availableTokens > maxRequests) {
+        availableTokens = maxRequests - 1
+        lastRequestServedTime = currentTime
         logger.debug(s"remaining: $availableTokens")
         true
-      } else if(suspended) {
+      } else if(availableTokens < 1) {
+        logger.debug("Not enough tokens.")
         false
       } else {
-        suspended = true
-        suspend
-        false
+        availableTokens = availableTokens - 1
+        logger.debug(s"remaining: $availableTokens")
+        lastRequestServedTime = currentTime
+        true
       }
     }
   }
+
+  def returnToken()(implicit ec: ExecutionContext = ExecutionContext.global) =
+    Future(Await.ready(Promise().future, Duration.apply(maxRequests / perTime, TimeUnit.SECONDS)))
+      .onComplete(u => {
+        logger.debug("Returning 1 token")
+        Try(locker.synchronized {
+          availableTokens = availableTokens + 1
+        })
+      })
 
   def suspend(implicit ec: ExecutionContext = ExecutionContext.global) =
     Future(Await.ready(Promise().future, Duration.apply(suspensionTime, TimeUnit.MINUTES)))
