@@ -9,24 +9,20 @@ class HotelsServlet extends HotelsServiceStack {
 
   get("/hotels") {
     val apiKey = params.get("apiKey")
-    logger.debug(s"Received request $request with apikey $apiKey")
+    val sortBy = params.get("sortBy")
+    val city = params.get("city")
+
+    logger.debug(s"Received request $request with apikey $apiKey, city: $city and sortBy: $sortBy")
     if (apiKey.fold(false)(HotelsService.requestApproved(_))) {
-      val sortBy = params.get("sortBy")
-      val city = params.get("city")
-      logger.debug(s"Query params city: $city and sortBy: $sortBy")
-
-      val hotels: Seq[Hotel] = city.fold(HotelsService.getHotels())(HotelsService.getHotelsByCity(_))
-      val sortedHotels = HotelsService.sortHotelsByPrice(hotels, sortBy)
       contentType = "text/csv"
-
-      serveHotels(sortedHotels)
+      serveHotels(city.fold(HotelsService.getHotels(sortBy))(HotelsService.getHotelsByCity(_, sortBy)))
     } else {
       logger.debug("Rejecting request. Did not get approval from rate limiter.")
       halt(ActionResult(ResponseStatus(429, "Too Many Requests"), tooManyRequestsError , Map()))
     }
   }
 
-  private def serveHotels(hotels: Seq[Hotel]) =
+  private def serveHotels(hotels: Seq[Hotel]): StringBuilder =
     hotels.foldLeft(new StringBuilder(HotelsService.getHeaderRow))((out, hotel) => out.append(hotel.toString))
 
   private val tooManyRequestsError = <html>

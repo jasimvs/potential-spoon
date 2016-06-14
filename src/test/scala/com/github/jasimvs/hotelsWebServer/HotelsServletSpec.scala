@@ -13,4 +13,9 @@ class HotelsServletSpec extends ScalatraSpec { def is =
   def root200 = get("/") {
     status must_== 200
   }
+
+  def hotels200 = get("/hotels") {
+    status must_== 200
+  }
+
 }

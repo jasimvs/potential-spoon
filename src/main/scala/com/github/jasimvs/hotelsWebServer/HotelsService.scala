@@ -8,50 +8,50 @@ import org.slf4j.LoggerFactory
  */
 object HotelsService {
 
-  private val logger =  LoggerFactory.getLogger(getClass)
+  private val logger = LoggerFactory.getLogger(getClass)
 
   private lazy val configService = ConfigService()
-  private val rateLimiterService: RateLimiterService = new RateLimiterService(configService)
-  private val hotelsDomain: Domain =  Domain(CsvDatatLoader.loadHotels(configService.getCsvDataLoaderFile).right.getOrElse(Seq[Hotel]()))
+  private lazy val rateLimiterService: RateLimiterService = new RateLimiterService(configService)
+  private lazy val hotelsDomain: Domain = Domain(CsvDatatLoader.loadHotels(configService.getCsvDataLoaderFile).right.getOrElse(Seq[Hotel]()))
 
-  def requestApproved(apikey: String) = rateLimiterService.requestApproved(apikey)
+  def requestApproved(apikey: String): Boolean = rateLimiterService.requestApproved(apikey)
 
-  def getHotels() = {
+  def getHotels(sortBy: Option[String] = None): Seq[Hotel] = {
     logger.debug("Get all hotels")
-    hotelsDomain.hotels
+    sortHotelsByPrice(hotelsDomain.hotels, sortBy)
   }
 
-  def getHotelsByCity(city: String): Seq[Hotel] = {
+  def getHotelsByCity(city: String, sortBy: Option[String] = None): Seq[Hotel] = {
     logger.debug(s"Get hotels by city $city")
-    hotelsDomain.hotels.filter(_.city == city)
+    sortHotelsByPrice(hotelsDomain.hotels.filter(_.city == city), sortBy)
   }
 
-//  def getHotelById(hotelId: Int): Option[Hotel] = {
-//    Domain.hotels.find(_.hotelId == hotelId)
-//  }
-//
-//  def getHotelsByRoom(room: String): Seq[Hotel] = {
-//    Domain.hotels.filter(_.room == room)
-//  }
-//
-//  def getHotelsByPrice(min: Int, max: Int): Seq[Hotel] = {
-//    Domain.hotels.filter(hotel => hotel.price >= min && hotel.price <= max)
-//  }
+  //  def getHotelById(hotelId: Int): Option[Hotel] = {
+  //    Domain.hotels.find(_.hotelId == hotelId)
+  //  }
+  //
+  //  def getHotelsByRoom(room: String): Seq[Hotel] = {
+  //    Domain.hotels.filter(_.room == room)
+  //  }
+  //
+  //  def getHotelsByPrice(min: Int, max: Int): Seq[Hotel] = {
+  //    Domain.hotels.filter(hotel => hotel.price >= min && hotel.price <= max)
+  //  }
 
   def sortHotelsByPrice(hotels: Seq[Hotel], sortOrder: Option[String]): Seq[Hotel] = {
-    logger.debug(s"Sorting by $sortOrder")
+    logger.info(s"Sorting by $sortOrder")
     sortOrder match {
       case Some("ASC") => hotels.sortWith(sortByPriceAsc)
-      case Some("DESC") => hotels.sortWith(sortByPriceAsc)
+      case Some("DESC") => hotels.sortWith(sortByPriceDesc)
       case _ => hotels
     }
   }
 
-  def getHeaderRow = hotelsDomain.CsvHeaderRow
+  def getHeaderRow: String = hotelsDomain.CsvHeaderRow
 
-  private def sortByPriceAsc = (h1: Hotel, h2: Hotel) => h1.price < h2.price
+  private def sortByPriceAsc: (Hotel, Hotel) => Boolean = (h1: Hotel, h2: Hotel) => h1.price < h2.price
 
-  private def sortByPriceDesc = (h1: Hotel, h2: Hotel) => h1.price > h2.price
+  private def sortByPriceDesc: (Hotel, Hotel) => Boolean = (h1: Hotel, h2: Hotel) => h1.price > h2.price
 
 }
 

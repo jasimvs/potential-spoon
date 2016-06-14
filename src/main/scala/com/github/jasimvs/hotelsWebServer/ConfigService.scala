@@ -14,12 +14,14 @@ class ConfigService(rootConf: Config, requestLimits: Config) {
   private val SuspensionTimeString = "suspensiontime"
   private val CsvDataFileString = "csvdatafile"
 
-  val DefaultRequestLimit = {
-    if (isConfigMissing(rootConf, DefaultRequestLimitString)) 100
-    else rootConf.getInt(DefaultRequestLimitString)
+  val DefaultRequestLimit: Int = {
+    if (isConfigMissing(rootConf, DefaultRequestLimitString))
+      100
+    else
+      rootConf.getInt(DefaultRequestLimitString)
   }
 
-  val getTimeLimit = {
+  val getTimeLimit: Int = {
     if (isConfigMissing(rootConf, TimeLimitString)) 10
     else rootConf.getInt(TimeLimitString)
   }
