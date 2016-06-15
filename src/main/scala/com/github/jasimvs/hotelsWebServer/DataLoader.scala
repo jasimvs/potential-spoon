@@ -1,6 +1,6 @@
 package com.github.jasimvs.hotelsWebServer
 
-import java.io.{FileNotFoundException, IOException, FileReader, File}
+import java.io.{FileNotFoundException, IOException, FileReader}
 
 import com.opencsv.CSVReader
 import org.slf4j.LoggerFactory

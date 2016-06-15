@@ -14,7 +14,7 @@ object HotelsService {
   private lazy val rateLimiterService: RateLimiterService = new RateLimiterService(configService)
   private lazy val hotelsDomain: Domain = Domain(CsvDatatLoader.loadHotels(configService.getCsvDataLoaderFile))
 
-  def requestApproved(apikey: String): Boolean = rateLimiterService.requestApproved(apikey)
+  def requestApproved(apikey: String): Boolean = rateLimiterService.isRequestApproved(apikey)
 
   def getHotels(sortBy: Option[String] = None): Either[Exception, Seq[Hotel]] = {
     logger.debug("Get all hotels")

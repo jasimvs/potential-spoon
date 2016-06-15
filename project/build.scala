@@ -30,6 +30,7 @@ object HotelsServiceBuild extends Build {
         "com.typesafe" % "config" % "1.3.0",
         "commons-collections" % "commons-collections" % "3.2.1" % "compile",
         "org.scalatra" %% "scalatra-specs2" % ScalatraVersion % "test",
+        "org.scalatest" % "scalatest_2.11" % "2.2.6" % "test",
         "ch.qos.logback" % "logback-classic" % "1.1.5" % "runtime",
         "org.eclipse.jetty" % "jetty-webapp" % "9.2.15.v20160210" % "container",
         "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided"
