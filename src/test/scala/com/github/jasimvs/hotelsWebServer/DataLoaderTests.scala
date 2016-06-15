@@ -7,9 +7,11 @@ import org.scalatest.{Matchers, WordSpec}
  */
 class DataLoaderTests extends WordSpec with Matchers {
 
+  val dataLoder: DataLoader = new CsvDataLoader()
+
   "DataLoader "  should {
     " be able to load a good csv file" in {
-      val exceptionOrHotels = CsvDatatLoader.loadHotels("hoteldb.csv")
+      val exceptionOrHotels = dataLoder.loadHotels("hoteldb.csv")
       exceptionOrHotels.isRight shouldBe true
       val hotels: Seq[Hotel] = exceptionOrHotels.right.get
       hotels.size shouldBe 26
@@ -18,7 +20,7 @@ class DataLoaderTests extends WordSpec with Matchers {
 
   "DataLoader "  should {
     " be able to load a good csv file even if it has incorrect rows" in {
-      val exceptionOrHotels = CsvDatatLoader.loadHotels("hoteldb-incorrect.csv")
+      val exceptionOrHotels = dataLoder.loadHotels("hoteldb-incorrect.csv")
       exceptionOrHotels.isRight shouldBe true
       val hotels: Seq[Hotel] = exceptionOrHotels.right.get
       hotels.size shouldBe 1
@@ -27,7 +29,7 @@ class DataLoaderTests extends WordSpec with Matchers {
 
   "DataLoader "  should {
     " return exception (left in Either) for file that does not exist" in {
-      val exceptionOrHotels = CsvDatatLoader.loadHotels("nohoteldb.csv")
+      val exceptionOrHotels = dataLoder.loadHotels("nohoteldb.csv")
       exceptionOrHotels.isLeft shouldBe true
       val exception = exceptionOrHotels.left.get
       exception.isInstanceOf[NullPointerException] shouldBe true
@@ -36,7 +38,7 @@ class DataLoaderTests extends WordSpec with Matchers {
 
   "DataLoader "  should {
     " return exception (left in Either) if null is passed instead of filename" in {
-      val exceptionOrHotels = CsvDatatLoader.loadHotels(null)
+      val exceptionOrHotels = dataLoder.loadHotels(null)
       exceptionOrHotels.isLeft shouldBe true
       val exception = exceptionOrHotels.left.get
       exception.isInstanceOf[NullPointerException] shouldBe true

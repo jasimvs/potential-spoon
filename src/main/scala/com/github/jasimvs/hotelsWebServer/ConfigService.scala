@@ -7,14 +7,16 @@ import scala.util.Try
 /**
  * Created by jsulaiman on 6/13/2016.
  */
-class ConfigService(rootConf: Config, requestLimits: Config) {
+class ConfigService(rootConf: Config) {
 
+  private val RequestLimitsString = "apikeyrequestlimits"
   private val DefaultRequestLimitString = "defaultrequestlimit"
   private val TimeLimitString = "limittime"
   private val SuspensionTimeString = "suspensiontime"
   private val CsvDataFileString = "csvdatafile"
+  private val requestLimits = rootConf.getConfig(RequestLimitsString)
 
-  val DefaultRequestLimit: Int = {
+  private val DefaultRequestLimit: Int = {
     val value = if (isConfigMissing(rootConf, DefaultRequestLimitString)) 100
     else rootConf.getInt(DefaultRequestLimitString)
     if (value > 0) value
@@ -35,29 +37,17 @@ class ConfigService(rootConf: Config, requestLimits: Config) {
     else 5
   }
 
-  val getCsvDataLoaderFile: String = {
-    if (isConfigMissing(rootConf, CsvDataFileString)) "/hoteldb.csv"
+  val getDataLoaderFile: String = {
+    if (isConfigMissing(rootConf, CsvDataFileString)) "hoteldb.csv"
     else rootConf.getString(CsvDataFileString)
   }
 
   def getRequestLimit(apiKey: String): Int = {
-    if (isConfigMissing(requestLimits, apiKey)) DefaultRequestLimit
+    if (apiKey == null || apiKey.length == 0 || isConfigMissing(requestLimits, apiKey)) DefaultRequestLimit
     else requestLimits.getInt(apiKey)
   }
 
   private def isConfigMissing(conf: Config, configName: String) = {
     Try(conf.getIsNull(configName)).isFailure
-  }
-}
-
-object ConfigService {
-  private val RootConfigString = "hotelsservice.app"
-  private val RequestLimitsString = "apikeyrequestlimits"
-
-  def apply() = {
-    val conf: Config = ConfigFactory.load.getConfig(RootConfigString)
-    val requestLimits = conf.getConfig(RequestLimitsString)
-    new ConfigService(conf, requestLimits)
-
   }
 }

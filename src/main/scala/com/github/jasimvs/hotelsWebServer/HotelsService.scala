@@ -6,17 +6,22 @@ import org.slf4j.LoggerFactory
 /**
  * Created by jsulaiman on 6/13/2016.
  */
-object HotelsService {
+trait HotelsService {
+  def requestApproved(apikey: String): Boolean
+  def getHotels(sortBy: Option[String] = None): Either[Exception, Seq[Hotel]]
+  def getHotelsByCity(city: String, sortBy: Option[String] = None): Either[Exception, Seq[Hotel]]
+  def getHeaderRow: String
+}
+
+class DefaultHotelsService(configService: ConfigService, rateLimiterService: RateLimiterService, dataLoader: DataLoader)
+  extends HotelsService {
 
   private val logger = LoggerFactory.getLogger(getClass)
+  private val hotelsDomain: Domain = Domain(dataLoader.loadHotels(configService.getDataLoaderFile))
 
-  private lazy val configService = ConfigService()
-  private lazy val rateLimiterService: RateLimiterService = new RateLimiterService(configService)
-  private lazy val hotelsDomain: Domain = Domain(CsvDatatLoader.loadHotels(configService.getCsvDataLoaderFile))
+  override def requestApproved(apikey: String): Boolean = rateLimiterService.isRequestApproved(apikey)
 
-  def requestApproved(apikey: String): Boolean = rateLimiterService.isRequestApproved(apikey)
-
-  def getHotels(sortBy: Option[String] = None): Either[Exception, Seq[Hotel]] = {
+  override def getHotels(sortBy: Option[String] = None): Either[Exception, Seq[Hotel]] = {
     logger.debug("Get all hotels")
     if (hotelsDomain.hotels.isRight)
       Right(sortHotelsByPrice(hotelsDomain.hotels.right.get, sortBy))
@@ -24,13 +29,15 @@ object HotelsService {
       hotelsDomain.hotels
   }
 
-  def getHotelsByCity(city: String, sortBy: Option[String] = None): Either[Exception, Seq[Hotel]] = {
+  override def getHotelsByCity(city: String, sortBy: Option[String] = None): Either[Exception, Seq[Hotel]] = {
     logger.debug(s"Get hotels by city $city")
     if (hotelsDomain.hotels.isRight)
       Right(sortHotelsByPrice(hotelsDomain.hotels.right.get.filter(_.city == city), sortBy))
     else
       hotelsDomain.hotels
   }
+
+  override def getHeaderRow: String = hotelsDomain.CsvHeaderRow
 
   //  def getHotelById(hotelId: Int): Option[Hotel] = {
   //    Domain.hotels.find(_.hotelId == hotelId)
@@ -52,8 +59,6 @@ object HotelsService {
       case _ => hotels
     }
   }
-
-  def getHeaderRow: String = hotelsDomain.CsvHeaderRow
 
   private def sortByPriceAsc: (Hotel, Hotel) => Boolean = (h1: Hotel, h2: Hotel) => h1.price < h2.price
 

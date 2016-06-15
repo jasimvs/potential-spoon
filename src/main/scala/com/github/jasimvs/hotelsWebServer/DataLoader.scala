@@ -12,7 +12,7 @@ trait DataLoader {
   def loadHotels(fileName: String): Either[Exception, Seq[Hotel]]
 }
 
-object CsvDatatLoader extends DataLoader {
+class CsvDataLoader extends DataLoader {
   private val logger = LoggerFactory.getLogger(getClass)
 
   override def loadHotels(fileName: String): Either[Exception, Seq[Hotel]] = {

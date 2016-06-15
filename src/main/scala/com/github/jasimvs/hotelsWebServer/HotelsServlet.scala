@@ -3,7 +3,7 @@ package com.github.jasimvs.hotelsWebServer
 import org.scalatra._
 import org.slf4j.LoggerFactory
 
-class HotelsServlet extends HotelsServiceStack {
+class HotelsServlet(hotelsService: HotelsService) extends HotelsServiceStack {
 
   private val logger = LoggerFactory.getLogger(getClass)
 
@@ -15,8 +15,8 @@ class HotelsServlet extends HotelsServiceStack {
     logger.debug(s"Received request $request with apikey $apiKey, city: $city and sortBy: $sortBy")
     apiKey match {
       case Some(key1) =>
-        if (HotelsService.requestApproved(key1)) {
-          val exceptionOrHotels = city.fold(HotelsService.getHotels(sortBy))(HotelsService.getHotelsByCity(_, sortBy))
+        if (hotelsService.requestApproved(key1)) {
+          val exceptionOrHotels = city.fold(hotelsService.getHotels(sortBy))(hotelsService.getHotelsByCity(_, sortBy))
           if (exceptionOrHotels.isRight) {
             contentType = "text/csv"
             serveHotels(exceptionOrHotels.right.get)
@@ -35,5 +35,5 @@ class HotelsServlet extends HotelsServiceStack {
   }
 
   private def serveHotels(hotels: Seq[Hotel]): StringBuilder =
-    hotels.foldLeft(new StringBuilder(HotelsService.getHeaderRow))((out, hotel) => out.append(hotel.toString))
+    hotels.foldLeft(new StringBuilder(hotelsService.getHeaderRow))((out, hotel) => out.append(hotel.toString))
 }

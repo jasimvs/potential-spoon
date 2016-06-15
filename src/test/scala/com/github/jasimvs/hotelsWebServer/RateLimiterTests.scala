@@ -53,7 +53,7 @@ class RateLimiterTests extends WordSpec with Matchers with ParallelTestExecution
 //class RateLimiterTest2 extends WordSpec with Matchers with ParallelTestExecution {
 //  "A RateLimiter" should {
 //    " issue tokens when not exceeding rate limit" in {
-//      val rateLimiter = RateLimiter("003", 3, 2, 1)
+//      val rateLimiter = RateLimiter("004", 3, 2, 1)
 //      rateLimiter.getToken() shouldBe true
 //      Thread.sleep(60 * 1000)
 //      rateLimiter.getToken() shouldBe true
