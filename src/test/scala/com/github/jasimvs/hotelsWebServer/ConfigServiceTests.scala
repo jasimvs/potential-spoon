@@ -13,7 +13,7 @@ class ConfigServiceTests extends WordSpec with Matchers {
       configService.DefaultRequestLimit shouldBe 100
       configService.getSuspensionTime shouldBe 1
       configService.getTimeLimit shouldBe 11
-      configService.getCsvDataLoaderFile shouldBe "/hoteldb.csv"
+      configService.getCsvDataLoaderFile shouldBe "hoteldb.csv"
       configService.getRequestLimit("xyz") shouldBe 10
     }
   }
